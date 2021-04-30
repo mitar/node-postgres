@@ -14,21 +14,23 @@ const poolFactory = (Client) => {
   }
 }
 
-var PG = function (clientConstructor) {
-  this.defaults = defaults
-  this.Client = clientConstructor
-  this.Query = this.Client.Query
-  this.Pool = poolFactory(this.Client)
-  this._pools = []
-  this.Connection = Connection
-  this.types = require('pg-types')
-  this.DatabaseError = DatabaseError
+module.exports = {
+  defaults: defaults,
+  _pools: [],
+  Connection: Connection,
+  types: require('pg-types'),
+  DatabaseError: DatabaseError,
 }
 
 if (typeof process.env.NODE_PG_FORCE_NATIVE !== 'undefined') {
-  module.exports = new PG(require('./native'))
+  var nativeClient = require('./native')
+  module.exports.Client = nativeClient
+  module.exports.Query = nativeClient.Query
+  module.exports.Pool = poolFactory(nativeClient)
 } else {
-  module.exports = new PG(Client)
+  module.exports.Client = Client
+  module.exports.Query = Client.Query
+  module.exports.Pool = poolFactory(Client)
 
   // lazy require native module...the native module may not have installed
   Object.defineProperty(module.exports, 'native', {
